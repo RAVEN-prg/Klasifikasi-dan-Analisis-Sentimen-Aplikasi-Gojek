@@ -17,9 +17,14 @@ def load_lstm_model():
 
 @st.cache_resource(show_spinner=False)
 def load_rf_model():
-    model = joblib.load("rf_sentiment_model.pkl")
-    vectorizer = joblib.load("tfidf_vectorizer.pkl")
-    return model, vectorizer
+    try:
+        model = joblib.load("best_rf_sentiment_model.pkl")
+        vectorizer = joblib.load("tfidf_vectorizer.pkl")
+        assert hasattr(vectorizer, "idf_"), "Vectorizer belum fit!"
+        return model, vectorizer
+    except Exception as e:
+        st.error(f"Gagal load model atau vectorizer: {e}")
+        raise
 
 # --- Sidebar ---
 with st.sidebar:
