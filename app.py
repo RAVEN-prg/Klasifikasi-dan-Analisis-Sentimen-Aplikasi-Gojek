@@ -38,25 +38,14 @@ with st.container():
             prediction = model.predict(sequence)[0]
             label_index = np.argmax(prediction)
             confidence = prediction[label_index]
-            
-            # Warna berdasarkan sentimen
-            color_map = {
-                "Negatif": "#f44336",  # Merah
-                "Netral": "#9e9e9e",   # Abu-abu
-                "Positif": "#4CAF50"   # Hijau
-            }
-            
+
             # --- Layout hasil ---
             st.markdown("---")
             col1, col2 = st.columns([1.2, 1])
 
             with col1:
                 st.subheader("📊 Hasil Prediksi")
-                st.markdown(f"""
-                    <div style='padding: 1em; border-radius: 8px; background-color: {color}; color: white; font-weight: bold; font-size: 18px;'>
-                        Sentimen: {sentiment_label}
-                    </div>
-                """, unsafe_allow_html=True)
+                st.success(f"**Sentimen:** {labels[label_index]}")
                 st.write(f"**Confidence Score:** {confidence:.2f}")
 
             with col2:
