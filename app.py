@@ -67,11 +67,8 @@ else:
     label_index = np.argmax(prediction)
     confidence = prediction[label_index]
     
-    # Prediksi label langsung
-    prediksi = rf_model.predict(ulasan_vek
-
-    
-    # Tambahan eksplisit: prediksi label langsung
+    prediksi = rf_model.predict(ulasan_vektor)
+                                
     prediksi_label = rf_model.predict(ulasan_vektor)[0]
     sentimen = prediksi_label
 
