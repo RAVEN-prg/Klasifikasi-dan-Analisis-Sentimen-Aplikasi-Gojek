@@ -1,205 +1,155 @@
-import pandas as pd
+import streamlit as st
 import numpy as np
-from sklearn.ensemble import RandomForestClassifier
-from sklearn.feature_extraction.text import TfidfVectorizer
-from sklearn.model_selection import train_test_split, cross_val_score
-from sklearn.metrics import classification_report, confusion_matrix
+import tensorflow as tf
+import matplotlib.pyplot as plt
 import pickle
-from utils import preprocess_text_sklearn
+from sklearn.feature_extraction.text import TfidfVectorizer
+from utils import preprocess_text, load_tokenizer, highlight_keywords
 
-def load_data(file_path):
-    """
-    Load dataset from CSV file
-    Expected columns: 'text' (review text) and 'label' (0=negatif, 1=netral, 2=positif)
-    """
+MAXLEN = 100
+labels = ["Negatif", "Netral", "Positif"]
+
+@st.cache_resource(show_spinner=False)
+def load_lstm_model():
+    model = tf.keras.models.load_model("lstm_sentiment_model.h5")
+    tokenizer = load_tokenizer("tokenizer.pickle")
+    return model, tokenizer
+
+@st.cache_resource(show_spinner=False)
+def load_random_forest_model():
     try:
-        df = pd.read_csv(file_path)
-        return df
+        with open("best_rf_sentiment_model.pkl", "rb") as f:
+            rf_model = pickle.load(f)
+        with open("tfidf_vectorizer.pkl", "rb") as f:
+            vectorizer = pickle.load(f)
+        return rf_model, vectorizer
     except FileNotFoundError:
-        print(f"File {file_path} tidak ditemukan!")
-        return None
+        st.error("File model Random Forest tidak ditemukan. Pastikan file 'random_forest_model.pkl' dan 'tfidf_vectorizer.pkl' tersedia.")
+        return None, None
 
-def train_random_forest_model(df, test_size=0.2, random_state=42):
-    """
-    Train Random Forest model for sentiment analysis
-    """
-    print("🚀 Memulai training Random Forest model...")
+# Load models
+lstm_model, tokenizer = load_lstm_model()
+rf_model, vectorizer = load_random_forest_model()
+
+# --- Sidebar ---
+with st.sidebar:
+    st.title("📘 Tentang Aplikasi")
+    st.markdown("""
+    Aplikasi ini digunakan untuk **analisis sentimen** terhadap ulasan pengguna aplikasi **Gojek**.
+
+    **Model yang tersedia:**
+    - **LSTM**: Menggunakan Deep Learning untuk memahami konteks dan urutan kata
+    - **Random Forest**: Menggunakan Machine Learning klasik dengan TF-IDF features
+
+    Masukkan ulasan, dan sistem akan mengklasifikasikannya sebagai **positif**, **netral**, atau **negatif**.
+    """)
     
-    # Preprocess text data
-    print("📝 Preprocessing text data...")
-    df['processed_text'] = df['text'].apply(preprocess_text_sklearn)
-    
-    # Prepare features and labels
-    X_text = df['processed_text'].values
-    y = df['label'].values
-    
-    # Create TF-IDF features
-    print("🔤 Membuat TF-IDF features...")
-    vectorizer = TfidfVectorizer(
-        max_features=10000,
-        ngram_range=(1, 3),  # unigram, bigram, trigram
-        min_df=2,
-        max_df=0.95,
-        stop_words=None  # You might want to add Indonesian stop words
+    # Model selection
+    st.markdown("---")
+    st.subheader("🤖 Pilih Model")
+    selected_model = st.radio(
+        "Pilih algoritma untuk analisis sentimen:",
+        ["LSTM (Deep Learning)", "Random Forest (Machine Learning)"],
+        help="LSTM lebih baik untuk konteks, Random Forest lebih cepat dan interpretable"
     )
-    
-    X_tfidf = vectorizer.fit_transform(X_text)
-    
-    # Split data
-    X_train, X_test, y_train, y_test = train_test_split(
-        X_tfidf, y, test_size=test_size, random_state=random_state, stratify=y
-    )
-    
-    print(f"📊 Data split: Train={X_train.shape[0]}, Test={X_test.shape[0]}")
-    
-    # Train Random Forest
-    print("🌳 Training Random Forest...")
-    rf_model = RandomForestClassifier(
-        n_estimators=200,
-        max_depth=20,
-        min_samples_split=5,
-        min_samples_leaf=2,
-        random_state=random_state,
-        n_jobs=-1
-    )
-    
-    rf_model.fit(X_train, y_train)
-    
-    # Evaluate model
-    print("📈 Evaluating model...")
-    train_score = rf_model.score(X_train, y_train)
-    test_score = rf_model.score(X_test, y_test)
-    
-    print(f"Training Accuracy: {train_score:.4f}")
-    print(f"Testing Accuracy: {test_score:.4f}")
-    
-    # Cross-validation
-    cv_scores = cross_val_score(rf_model, X_train, y_train, cv=5)
-    print(f"Cross-validation scores: {cv_scores}")
-    print(f"Average CV score: {cv_scores.mean():.4f} (+/- {cv_scores.std() * 2:.4f})")
-    
-    # Detailed evaluation
-    y_pred = rf_model.predict(X_test)
-    labels = ["Negatif", "Netral", "Positif"]
-    
-    print("\n📋 Classification Report:")
-    print(classification_report(y_test, y_pred, target_names=labels))
-    
-    print("\n🔍 Confusion Matrix:")
-    print(confusion_matrix(y_test, y_pred))
-    
-    # Feature importance
-    print("\n🔍 Top 20 Most Important Features:")
-    feature_names = vectorizer.get_feature_names_out()
-    importances = rf_model.feature_importances_
-    indices = np.argsort(importances)[::-1]
-    
-    for i in range(min(20, len(feature_names))):
-        idx = indices[i]
-        print(f"{i+1:2d}. {feature_names[idx]:20s} ({importances[idx]:.4f})")
-    
-    return rf_model, vectorizer
 
-def save_models(rf_model, vectorizer):
-    """Save trained model and vectorizer with better compatibility"""
-    print("\n💾 Saving models...")
-    
-    try:
-        # Save with protocol 2 for better compatibility across Python versions
-        with open("random_forest_model.pkl", "wb") as f:
-            pickle.dump(rf_model, f, protocol=2)
-        print("✅ Random Forest model saved as 'random_forest_model.pkl'")
-        
-        with open("tfidf_vectorizer.pkl", "wb") as f:
-            pickle.dump(vectorizer, f, protocol=2)
-        print("✅ TF-IDF vectorizer saved as 'tfidf_vectorizer.pkl'")
-        
-        # Also save as joblib for additional compatibility
-        try:
-            import joblib
-            joblib.dump(rf_model, "random_forest_model.joblib")
-            joblib.dump(vectorizer, "tfidf_vectorizer.joblib")
-            print("✅ Alternative joblib files also saved")
-        except ImportError:
-            print("⚠️ joblib not available, only pickle files saved")
-            
-    except Exception as e:
-        print(f"❌ Error saving models: {e}")
-        raise
+# --- Header utama ---
+st.markdown("<h1 style='color: #4CAF50;'>Analisis Sentimen Ulasan Gojek 🚖</h1>", unsafe_allow_html=True)
+st.write("Masukkan ulasan pengguna di bawah ini dan lihat hasil prediksi sentimennya secara langsung.")
 
-def create_sample_dataset():
-    """Create a sample dataset for demonstration"""
-    sample_data = {
-        'text': [
-            # Positive reviews
-            "Aplikasi Gojek sangat membantu, driver cepat datang dan pelayanan memuaskan",
-            "Driver ramah dan profesional, aplikasi mudah digunakan",
-            "Pelayanan terbaik, cepat dan efisien",
-            "Sangat puas dengan layanan Gojek, recommended banget",
-            "Aplikasi bagus, fitur lengkap dan praktis",
-            "Driver sopan dan kendaraan bersih",
-            "Pelayanan cepat dan harga terjangkau",
-            "Gojek memudahkan mobilitas sehari-hari",
-            
-            # Negative reviews  
-            "Aplikasi sering error dan lemot",
-            "Driver tidak sopan dan terlambat datang",
-            "Pelayanan mengecewakan, aplikasi bermasalah",
-            "Harga terlalu mahal dan aplikasi susah digunakan",
-            "Driver kasar dan kendaraan kotor",
-            "Aplikasi crash terus, sangat mengganggu",
-            "Pelayanan terburuk yang pernah ada",
-            "Gojek semakin tidak berkualitas",
-            
-            # Neutral reviews
-            "Aplikasi biasa saja, tidak istimewa",
-            "Pelayanan standar seperti ojol pada umumnya",
-            "Cukup bagus tapi masih bisa diperbaiki",
-            "Tidak ada yang spesial dari aplikasi ini",
-            "Pelayanan oke, harga standar",
-            "Aplikasi lumayan, ada plus minusnya",
-            "Gojek seperti aplikasi ojol lainnya",
-            "Biasa aja, tidak buruk tapi tidak excellent juga"
-        ],
-        'label': [
-            # Positive (2)
-            2, 2, 2, 2, 2, 2, 2, 2,
-            # Negative (0)  
-            0, 0, 0, 0, 0, 0, 0, 0,
-            # Neutral (1)
-            1, 1, 1, 1, 1, 1, 1, 1
-        ]
-    }
-    
-    df = pd.DataFrame(sample_data)
-    df.to_csv("sample_gojek_reviews.csv", index=False)
-    print("✅ Sample dataset created as 'sample_gojek_reviews.csv'")
-    return df
+# Display selected model info
+model_info = {
+    "LSTM (Deep Learning)": "🧠 Menggunakan neural network untuk memahami konteks dan urutan kata",
+    "Random Forest (Machine Learning)": "🌳 Menggunakan ensemble learning dengan TF-IDF features"
+}
+st.info(f"**Model aktif:** {selected_model} - {model_info[selected_model]}")
 
-def main():
-    """Main function to train Random Forest model"""
-    print("🤖 Random Forest Sentiment Analysis Training Script")
-    print("=" * 50)
-    
-    # Try to load existing dataset
-    df = load_data("gojek_reviews.csv")  # Replace with your actual dataset file
-    
-    if df is None:
-        print("📝 Creating sample dataset for demonstration...")
-        df = create_sample_dataset()
-        print(f"📊 Sample dataset created with {len(df)} reviews")
-    else:
-        print(f"📊 Dataset loaded with {len(df)} reviews")
-        print(f"Label distribution:\n{df['label'].value_counts()}")
-    
-    # Train model
-    rf_model, vectorizer = train_random_forest_model(df)
-    
-    # Save models
-    save_models(rf_model, vectorizer)
-    
-    print("\n🎉 Training completed successfully!")
-    print("You can now use the Random Forest model in your Streamlit app.")
+# --- Input pengguna ---
+with st.container():
+    text_input = st.text_area("📝 Masukkan Ulasan Pengguna", height=150, placeholder="Contoh: Aplikasinya sangat membantu, driver datang tepat waktu...")
 
-if __name__ == "__main__":
-    main()
+    if st.button("🔍 Analisis Sekarang"):
+        if text_input.strip():
+            try:
+                if selected_model == "LSTM (Deep Learning)":
+                    # LSTM prediction
+                    sequence = preprocess_text(text_input, tokenizer, maxlen=MAXLEN)
+                    prediction = lstm_model.predict(sequence, verbose=0)[0]
+                    label_index = np.argmax(prediction)
+                    confidence = prediction[label_index]
+                    
+                elif selected_model == "Random Forest (Machine Learning)":
+                    if rf_model is None or vectorizer is None:
+                        st.error("Model Random Forest tidak tersedia. Silakan pilih model LSTM.")
+                        st.stop()
+                    
+                    # Random Forest prediction
+                    from utils import clean_text
+                    cleaned_text = clean_text(text_input)
+                    text_vectorized = vectorizer.transform([cleaned_text])
+                    
+                    # Get prediction probabilities
+                    prediction_proba = rf_model.predict_proba(text_vectorized)[0]
+                    label_index = rf_model.predict(text_vectorized)[0]
+                    confidence = prediction_proba[label_index]
+                    prediction = prediction_proba
+
+                st.markdown("---")
+                col1, col2 = st.columns([1.2, 1])
+
+                with col1:
+                    st.subheader("📊 Hasil Prediksi")
+                    
+                    # Color coding for sentiment
+                    sentiment_colors = {0: "🔴", 1: "🟡", 2: "🟢"}
+                    st.success(f"**Sentimen:** {sentiment_colors[label_index]} {labels[label_index]}")
+                    st.write(f"**Confidence Score:** {confidence:.2f}")
+                    st.write(f"**Model yang digunakan:** {selected_model}")
+
+                with col2:
+                    fig, ax = plt.subplots(figsize=(8, 6))
+                    colors = ["#f44336", "#ff9800", "#4CAF50"]
+                    bars = ax.bar(labels, prediction, color=colors)
+                    ax.set_ylabel("Confidence Score")
+                    ax.set_ylim(0, 1)
+                    ax.set_title(f"Distribusi Confidence - {selected_model}")
+                    
+                    # Add value labels on bars
+                    for bar, value in zip(bars, prediction):
+                        height = bar.get_height()
+                        ax.text(bar.get_x() + bar.get_width()/2., height + 0.01,
+                               f'{value:.3f}', ha='center', va='bottom')
+                    
+                    plt.tight_layout()
+                    st.pyplot(fig)
+
+                # Model comparison section
+                st.markdown("### 🔄 Perbandingan Model")
+                col3, col4 = st.columns(2)
+                
+                with col3:
+                    st.write("**LSTM Prediction:**")
+                    lstm_seq = preprocess_text(text_input, tokenizer, maxlen=MAXLEN)
+                    lstm_pred = lstm_model.predict(lstm_seq, verbose=0)[0]
+                    lstm_label = np.argmax(lstm_pred)
+                    st.write(f"Sentimen: {labels[lstm_label]} ({lstm_pred[lstm_label]:.3f})")
+                
+                with col4:
+                    if rf_model is not None and vectorizer is not None:
+                        st.write("**Random Forest Prediction:**")
+                        from utils import clean_text
+                        rf_text = vectorizer.transform([clean_text(text_input)])
+                        rf_pred = rf_model.predict_proba(rf_text)[0]
+                        rf_label = rf_model.predict(rf_text)[0]
+                        st.write(f"Sentimen: {labels[rf_label]} ({rf_pred[rf_label]:.3f})")
+                    else:
+                        st.write("Random Forest model tidak tersedia")
+
+                st.markdown("### ✨ Kata Kunci yang Disorot")
+                highlighted_text = highlight_keywords(text_input)
+                st.markdown(highlighted_text, unsafe_allow_html=True)
+                
+            except Exception as e:
+                st.error(f"Terjadi kesalahan saat melakukan prediksi: {str(e)}")
+        else:
+            st.warning("Silakan masukkan teks ulasan terlebih dahulu.")
