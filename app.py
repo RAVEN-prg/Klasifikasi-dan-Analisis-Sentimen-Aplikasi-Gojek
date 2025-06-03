@@ -72,8 +72,8 @@ else:
     prediksi_label = rf_model.predict(ulasan_vektor)[0]
     sentimen = prediksi_label
 
-        label_index = np.argmax(prediction)
-        confidence = prediction[label_index]
+    label_index = np.argmax(prediction)
+    confidence = prediction[label_index]
 
         with col1:
             st.subheader("📊 Hasil Prediksi")
