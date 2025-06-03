@@ -18,7 +18,7 @@ def load_lstm_model_and_tokenizer():
 @st.cache_resource(show_spinner="Memuat model Random Forest...")
 def load_rf_model_and_vectorizer():
     try:
-        with open("best_rf_sentiment_model.pkl", "rb") as f_model:
+        with open("best_rfsentiment_model.pkl", "rb") as f_model:
             model_rf = pickle.load(f_model)
         vectorizer_rf = load_vectorizer("tfidf_vectorizer.pkl")
         return model_rf, vectorizer_rf
