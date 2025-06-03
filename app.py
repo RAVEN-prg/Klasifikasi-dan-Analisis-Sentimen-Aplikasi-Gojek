@@ -55,13 +55,21 @@ if st.button("🔍 Analisis Sekarang"):
         st.markdown("---")
         col1, col2 = st.columns([1.2, 1])
 
-        if model_option == "LSTM":
-            sequence = preprocess_text(text_input, tokenizer, maxlen=MAXLEN)
-            prediction = model.predict(sequence)[0]
-        else:
-            clean = clean_text(text_input)
-            vector = tfidf_vectorizer.transform([clean])
-            prediction = rf_model.predict_proba(vector)[0]
+if model_option == "LSTM":
+    sequence = preprocess_text(text_input, tokenizer, maxlen=MAXLEN)
+    prediction = model.predict(sequence)[0]
+    label_index = np.argmax(prediction)
+    confidence = prediction[label_index]
+else:
+    clean = clean_text(text_input)
+    ulasan_vektor = tfidf_vectorizer.transform([clean])
+    prediction = rf_model.predict_proba(ulasan_vektor)[0]
+    label_index = np.argmax(prediction)
+    confidence = prediction[label_index]
+    
+    # Tambahan eksplisit: prediksi label langsung
+    prediksi_label = rf_model.predict(ulasan_vektor)[0]
+    sentimen = prediksi_label
 
         label_index = np.argmax(prediction)
         confidence = prediction[label_index]
