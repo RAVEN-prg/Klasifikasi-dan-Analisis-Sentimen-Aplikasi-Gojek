@@ -20,7 +20,7 @@ def load_random_forest_model():
     try:
         with open("best_rf_sentiment_model.pkl", "rb") as f:
             rf_model = pickle.load(f)
-        with open("tfidf_vectorizer (2).pkl", "rb") as f:
+        with open("tfidf_vectorizer.pkl", "rb") as f:
             vectorizer = pickle.load(f)
         return rf_model, vectorizer
     except FileNotFoundError:
