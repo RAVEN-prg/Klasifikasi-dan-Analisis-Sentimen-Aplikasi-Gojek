@@ -41,7 +41,7 @@ with st.sidebar:
     st.markdown("""
     Aplikasi ini digunakan untuk **analisis sentimen** terhadap ulasan pengguna aplikasi **Gojek**.
 
-    Model utama menggunakan **Random Forest** dengan kemampuan interpretasi kata kunci penting.
+    Memiliki dua model menggunakan *LSTM* dan **Random Forest** dengan kemampuan interpretasi kata kunci penting.
     """)
 
     model_option = st.selectbox("🔍 Pilih Model Analisis", ["Random Forest", "LSTM"])
