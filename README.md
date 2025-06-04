@@ -62,6 +62,14 @@ joblib>=1.1.0
 ├── utils.py                        # Fungsi utility
 ├── requirements.txt                # Dependencies
 ├── README.md                       # Dokumentasi
+├── Notebook
+│    ├── Preprocessing_Analisis_Senitmen.ipynb   # Melakukan perpocessing data mentah
+│    ├── Train_RandomForest_Model.ipynb          # melakukan training dengan model random forest
+│    ├── Training_LSTM_Model.ipynb               # melakukan training dengan model LSTM
+├── Dataset
+│    ├── GojekAppReview_1.csv         # data mentah 
+│    ├── processed_gojek_reviews.csv  # data preprocessed
+│    ├── cleaned_data.csv             # data bersih dengan dua kolom 
 ├── model/
 │   ├── lstm_sentiment_model.h5     # Model LSTM
 │   ├── rf_sentiment_model.pkl      # Model Random Forest
