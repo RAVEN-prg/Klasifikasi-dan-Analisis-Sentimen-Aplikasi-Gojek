@@ -50,12 +50,14 @@ pip install -r requirements.txt
 
 ### Requirements.txt
 ```
-streamlit>=1.28.0
-tensorflow>=2.12.0
-numpy>=1.21.0
-matplotlib>=3.5.0
-scikit-learn>=1.0.0
-joblib>=1.1.0
+streamlit==1.35.0
+tensorflow==2.19.0
+scikit-learn==1.6.1
+pandas==2.2.2
+numpy==1.26.4
+matplotlib==3.8.4
+nltk==3.8.1
+joblib==1.4.2
 ```
 
 ### Struktur Direktori
