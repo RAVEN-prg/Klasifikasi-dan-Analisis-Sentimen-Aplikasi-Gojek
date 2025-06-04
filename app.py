@@ -17,7 +17,7 @@ def load_lstm_model():
 
 @st.cache_resource(show_spinner=False)
 def load_rf_model():
-    model = joblib.load("rf_sentiment_model.pkl")
+    model = joblib.load("random_forest_sentiment_model.pkl")
     vectorizer = joblib.load("tfidf_vectorizer.pkl")
     return model, vectorizer
 
