@@ -17,8 +17,8 @@ def load_lstm_model():
 
 @st.cache_resource(show_spinner=False)
 def load_rf_model():
-    model = joblib.load("rf_sentiment_model.pkl")
-    vectorizer = joblib.load("tfidf_vectorizer.pkl")
+    model = joblib.load("model/rf_sentiment_model.pkl")
+    vectorizer = joblib.load("model/tfidf_vectorizer.pkl")
     # Get top features for each class
     feature_names = vectorizer.get_feature_names_out()
     top_features = {
