@@ -11,7 +11,7 @@ labels = ["Negatif", "Netral", "Positif"]
 
 @st.cache_resource(show_spinner=False)
 def load_lstm_model():
-    model = tf.keras.models.load_model("lstm_sentiment_model.h5")
+    model = tf.keras.models.load_model("model/lstm_sentiment_model.h5")
     tokenizer = load_tokenizer("tokenizer.pickle")
     return model, tokenizer
 
