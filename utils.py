@@ -19,18 +19,22 @@ def preprocess_text(text, tokenizer, maxlen=100):
     padded = pad_sequences(seq, maxlen=maxlen, padding="post", truncating="post")
     return padded
 
-import re
-
-def highlight_keywords(text):
-    # Daftar kata negatif dan positif (bisa dikembangkan)
-    negative_words = ["jelek", "lambat", "parah", "buruk", "error", "tidak", "cancel", "gagal"]
-    positive_words = ["bagus", "cepat", "mantap", "baik", "terbaik", "senang", "puas"]
-
-    # Highlight berdasarkan polaritas
-    for word in negative_words:
-        text = re.sub(rf"\b({word})\b", r"<mark style='background-color: #ffcccc;'>\1</mark>", text, flags=re.IGNORECASE)
-
-    for word in positive_words:
-        text = re.sub(rf"\b({word})\b", r"<mark style='background-color: #ccffcc;'>\1</mark>", text, flags=re.IGNORECASE)
-
+def highlight_keywords_rf(text, top_features):
+    """
+    Highlight keywords based on Random Forest's important features
+    top_features should be a dict with 'positive' and 'negative' keys
+    containing lists of important words
+    """
+    # Highlight positive words
+    for word in top_features['positive']:
+        text = re.sub(rf"\b({re.escape(word)})\b", 
+                     r"<mark style='background-color: #ccffcc;'>\1</mark>", 
+                     text, flags=re.IGNORECASE)
+    
+    # Highlight negative words
+    for word in top_features['negative']:
+        text = re.sub(rf"\b({re.escape(word)})\b", 
+                     r"<mark style='background-color: #ffcccc;'>\1</mark>", 
+                     text, flags=re.IGNORECASE)
+    
     return text
