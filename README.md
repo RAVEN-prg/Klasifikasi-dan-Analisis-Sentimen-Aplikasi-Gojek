@@ -85,8 +85,8 @@ joblib==1.4.2
 
 1. **Clone repository** (jika menggunakan Git):
 ```bash
-git clone <repository-url>
-cd gojek-sentiment-analysis
+git clone https://github.com/RAVEN-prg/Klasifikasi-dan-Analisis-Sentimen-Aplikasi-Gojek.git
+cd Klasifikasi-dan-Analisis-Sentimen-Aplikasi-Gojek
 ```
 
 2. **Install dependencies**:
