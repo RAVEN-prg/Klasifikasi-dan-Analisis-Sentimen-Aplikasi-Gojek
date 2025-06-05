@@ -2,7 +2,7 @@
 
 Aplikasi analisis sentimen berbasis web untuk menganalisis ulasan pengguna aplikasi Gojek menggunakan Streamlit. Aplikasi ini menyediakan dua model machine learning yang berbeda: **LSTM** dan **Random Forest** dengan kemampuan interpretasi kata kunci.
 
-## 🌐 Live Demo: [https://your-app-name.streamlit.app](https://web-analisis-sentimen-gojek.streamlit.app/)
+## 🌐 Live Demo: [Streamlit](https://web-analisis-sentimen-gojek.streamlit.app/)
 
 ## 🌟 Fitur Utama
 
@@ -67,7 +67,7 @@ joblib==1.4.2
 ├── requirements.txt                # Dependencies
 ├── README.md                       # Dokumentasi
 ├── Notebook
-│    ├── Preprocessing_Analisis_Senitmen.ipynb   # Melakukan perpocessing data mentah
+│    ├── Preprocessing_Analisis_Sentimen.ipynb   # Melakukan perpocessing data mentah
 │    ├── Train_RandomForest_Model.ipynb          # melakukan training dengan model random forest
 │    ├── Training_LSTM_Model.ipynb               # melakukan training dengan model LSTM
 ├── Dataset
@@ -157,47 +157,30 @@ Berisi fungsi-fungsi utility:
 
 **Input Netral:**
 ```
-"Aplikasi Gojek biasa saja, tidak ada yang istimewa"
+"Gojek berjalan dengan baik, meskipun terkadang sedikit lambat"
 ```
-
-## 🔍 Troubleshooting
-
-### Model tidak dapat dimuat
-- Pastikan file model ada di direktori `model/`
-- Periksa apakah `tokenizer.pickle` ada di root directory
-
-### Error saat preprocessing
-- Pastikan input tidak kosong
-- Periksa format encoding teks input
-
-### Streamlit tidak dapat diakses
-- Pastikan port 8501 tidak digunakan aplikasi lain
-- Coba jalankan dengan port berbeda: `streamlit run app.py --server.port 8502`
 
 ## 📊 Performa Model
 
-Model telah dilatih dan dioptimalkan untuk:
-- Akurasi tinggi dalam klasifikasi sentimen ulasan Gojek
-- Kecepatan prediksi real-time
-- Interpretabilitas hasil (khusus Random Forest)
+| Model         | Accuracy | Precision | Recall | F1 Score |
+| ------------- | -------- | --------- | ------ | -------- |
+| Random Forest | \~86%    | \~84%     | \~86%  | \~85%    |
+| LSTM          | \~89%    | \~87%     | \~89%  | \~87%    |
+
 
 ## 🤝 Kontribusi
 
 Untuk berkontribusi pada proyek ini:
-1. Fork repository
-2. Buat branch fitur baru
-3. Commit perubahan
-4. Push ke branch
-5. Buat Pull Request
+| Nama |
+|--------|
+| Rafael Aryapati Soebagijo |
+| Ferry Saputra |
+| Ryan Delon Pratama |
+| Sandy W. Simatupang |
+| Rifky Mustaqim Handoko |
+| Ahmad Iqbal |
+| Atong Nazarius |
 
-## 📄 Lisensi
 
-Proyek ini menggunakan lisensi [MIT License](LICENSE).
-
-## 👨‍💻 Author
-
-Dibuat dengan ❤️ untuk analisis sentimen ulasan Gojek
 
 ---
-
-**Catatan**: Pastikan semua file model dan dependencies telah terinstall sebelum menjalankan aplikasi.
