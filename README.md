@@ -137,12 +137,6 @@ Berisi fungsi-fungsi utility:
 - **Hijau**: Kata-kata yang berkontribusi pada sentimen positif
 - **Merah**: Kata-kata yang berkontribusi pada sentimen negatif
 
-## ⚙️ Konfigurasi
-
-### Parameter yang dapat disesuaikan:
-- `MAXLEN = 100`: Panjang maksimum sequence untuk LSTM
-- `top_n = 10`: Jumlah fitur teratas untuk highlighting
-
 ## 🧪 Contoh Penggunaan
 
 **Input Positif:**
